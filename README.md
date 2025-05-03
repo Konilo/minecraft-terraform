@@ -2,6 +2,8 @@
 
 This repo allows the set up of a modded Minecraft Java server on AWS using Terraform, NeoForge, and bash scripts.
 
+Pieces of this work were inspired by [Minecraft-World-in-AWS](https://github.com/chica-94/Minecraft-World-in-AWS) and [Holycube Revolution](https://www.curseforge.com/minecraft/modpacks/holycube-revolution).
+
 ## How to get the server running
 
 - Get AWS credentials.
@@ -61,7 +63,9 @@ This repo allows the set up of a modded Minecraft Java server on AWS using Terra
 - Persistence and back ups:
     - For now, persistence and backups are not automatic. You have to copy the server files back from the EC2 to your machine manually.
     ```
-    scp -i minecraft-ec2-ssh-key.pem -r ec2-user@15.237.52.168:/opt/minecraft/server/ /app/server_files_backup/2025-05-03/
+    mkdir /app/server_files_backups/
+    mkdir /app/server_files_backups/2025-05-03/
+    scp -i minecraft-ec2-ssh-key.pem -r ec2-user@15.237.52.168:/opt/minecraft/server/ /app/server_files_backups/2025-05-03/
     ```
     - You can later use those dirs instead of `initial_server_files/` to restore a backup.
 - Shutting down
