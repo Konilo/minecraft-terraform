@@ -1,4 +1,4 @@
-# Minecract Terraform
+# Minecraft Terraform
 
 This repo allows the set up of a modded Minecraft Java server on AWS using Terraform, NeoForge, and bash scripts.
 
