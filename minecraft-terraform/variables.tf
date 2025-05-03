@@ -6,7 +6,7 @@ variable "region" {
 }
 
 variable "availability_zone" {
-  description = "Subnets Availability Zone"
+  description = "Subnets availability zone"
   default     = "eu-west-3a"
 }
 
@@ -32,18 +32,23 @@ variable "ec2_instance_connect" {
 
 variable "minecraft_ami" {
   description = "AMI to use for the EC2"
-  # Default is Amazon Linux 2023 AMI (34-bit, Arm)
-  default = "ami-016e8ec7559ac3629"
+  # Amazon Linux 2023 AMI (64-bit (x86), uefi-preferred)
+  default = "ami-03b82db05dca8118d"
 }
 
 variable "instance_type" {
   type        = string
-  default     = "t4g.small"
+  # Requires x86 architecture
+  # Charges apply for this instance type
+  default     = "r6i.large"
   description = "EC2 instance type"
 }
 
 variable "ec2_ssh_cidr" {
   type        = string
-  default     = "83.199.176.224/32"
-  description = "CIDR block to access the EC2 via SSH"
+  # Replace with your IP address https://whatismyipaddress.com/
+  # Leave the "/32" at the end
+  # Or use `terraform apply -var 'ec2_ssh_cidr=YOUR_IP_ADDRESS/32'`
+  default     = "xx.xx.xx.xx/32"
+  description = "CIDR block to access the EC2 via SSH."
 }

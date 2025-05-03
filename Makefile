@@ -1,2 +1,2 @@
-run-dev-env:
-	bash bin/run_dev_env.sh
+run-container:
+	bash bin/run_container.sh

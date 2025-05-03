@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
 # Define variables
-CONTAINER_NAME="minecraft_terraform_dev"
-IMAGE_NAME="minecraft_terraform:dev"
-DOCKERFILE="Dockerfile_dev"
+CONTAINER_NAME="minecraft_terraform"
+IMAGE_NAME="minecraft_terraform:v1.0"
+DOCKERFILE="Dockerfile"
 
 # Stop and remove the container if it already exists
 if docker ps --all --format '{{.Names}}' | grep --extended-regexp --quiet "^${CONTAINER_NAME}\$"; then

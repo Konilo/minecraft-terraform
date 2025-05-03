@@ -15,7 +15,6 @@ provider "aws" {
 
 # VPC
 resource "aws_vpc" "vpc" {
-
   cidr_block           = var.vpc_cidr
   enable_dns_hostnames = true
   instance_tenancy     = "default"
@@ -72,7 +71,7 @@ resource "aws_security_group" "minecraft" {
   vpc_id      = aws_vpc.vpc.id
   description = "Minecraft server traffic"
 
-  # Allow Minecraft Connections from anywhere
+  # Allow Minecraft connections from anywhere
   ingress {
     from_port   = 25565
     to_port     = 25565
@@ -89,6 +88,7 @@ resource "aws_security_group" "minecraft" {
 
   }
 
+  # Allow all outbound traffic
   egress {
     from_port   = 0
     to_port     = 0
@@ -109,9 +109,9 @@ resource "aws_instance" "minecraft" {
   instance_type               = var.instance_type
   vpc_security_group_ids      = [aws_security_group.minecraft.id]
   associate_public_ip_address = true
-  key_name                    = "minecraft-key"
+  key_name                    = "minecraft-ec2-ssh-key"
   tags = {
     Name = "MinecraftServer"
   }
-  user_data = file("startup.sh")
+  # user_data = file("startup_neoforge.sh")
 }
