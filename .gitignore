@@ -39,3 +39,4 @@ terraform.rc
 .env
 draft/
 draft*
+*.pem
