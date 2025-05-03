@@ -31,7 +31,6 @@ Pieces of this work were inspired by [Minecraft-World-in-AWS](https://github.com
     - Generate the key pair that will be used to SSH to the EC2.
     ```
     aws ec2 create-key-pair --key-name minecraft-ec2-ssh-key --query "KeyMaterial" --output text > /app/minecraft-terraform/minecraft-ec2-ssh-key.pem
-    chmod 400 minecraft-ec2-ssh-key.pem
     ```
     - Run the terraform config and save the EC2's public IP displayed at the end of the process.
     ```
@@ -43,7 +42,7 @@ Pieces of this work were inspired by [Minecraft-World-in-AWS](https://github.com
 - Setting up the Minecraft server
     - Create the server's dir on the EC2
     ```
-    ssh -i minecraft-ec2-ssh-key.pem ec2-user@<ec2-ip-address>
+    ssh -i /app/minecraft-terraform/minecraft-ec2-ssh-key.pem ec2-user@<ec2-ip-address>
     sudo mkdir /opt/minecraft
     sudo mkdir /opt/minecraft/server
     sudo chmod -R 777 /opt/minecraft/server
@@ -65,7 +64,7 @@ Pieces of this work were inspired by [Minecraft-World-in-AWS](https://github.com
     ```
     mkdir /app/server_files_backups/
     mkdir /app/server_files_backups/2025-05-03/
-    scp -i minecraft-ec2-ssh-key.pem -r ec2-user@15.237.52.168:/opt/minecraft/server/ /app/server_files_backups/2025-05-03/
+    scp -i minecraft-ec2-ssh-key.pem -r ec2-user@<ec2-ip-address>:/opt/minecraft/server/* /app/server_files_backups/2025-05-03/
     ```
     - You can later use those dirs instead of `initial_server_files/` to restore a backup.
 - Shutting down

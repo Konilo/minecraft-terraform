@@ -41,6 +41,8 @@ if [ ! -d libraries ]; then
 
     echo "Running Neoforge installer."
     "${HolyCubeRevolution_JAVA:-java}" -jar "$INSTALLER" -installServer
+    echo "Removing Neoforge installer."
+    rm "$INSTALLER"
 fi
 
 if [ ! -e server.properties ]; then

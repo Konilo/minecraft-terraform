@@ -9,18 +9,18 @@ sudo yum install -y java-21-amazon-corretto
 
 sudo mkdir -p /opt/minecraft/server/logs
 # Create startup script
-sudo cat <<EOF > start
+sudo cat <<EOF > /opt/minecraft/server/start
 #!/bin/bash
 bash /opt/minecraft/server/startserver.sh nogui
 EOF
-chmod +x start
+chmod +x /opt/minecraft/server/start
 
 # Create stop script
-cat <<EOF > stop
+cat <<EOF > /opt/minecraft/server/stop
 #!/bin/bash
 kill -9 \$(pgrep -f "java")
 EOF
-chmod +x stop
+chmod +x /opt/minecraft/server/stop
 
 # Set permissions for logs
 sudo chmod -R 777 /opt/minecraft/server/logs
@@ -46,7 +46,7 @@ EOF
 # Start up Minecraft server
 sudo systemctl daemon-reload
 sudo systemctl enable minecraft.service
-sudo chmod -R 777 /opt/minecraft/server # again
+sudo chmod -R 777 /opt/minecraft/server
 sudo systemctl start minecraft.service
 
 # Useful commands to manage the service
