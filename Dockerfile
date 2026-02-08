@@ -6,7 +6,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     bash \
     gnupg \
     software-properties-common \
-    wget
+    wget \
+    rsync \
+    openssh-client
 
 WORKDIR /app
 
@@ -22,5 +24,3 @@ RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2
     unzip awscliv2.zip && \
     ./aws/install && \
     rm -rf awscliv2.zip aws
-
-COPY . /app

@@ -1,0 +1,34 @@
+{
+    "name": "Minecraft Terraform",
+    "build": {
+        "dockerfile": "../Dockerfile"
+    },
+    "workspaceFolder": "/app",
+    "workspaceMount": "source=${localWorkspaceFolder},target=/app,type=bind,consistency=cached",
+    "features": {
+        "ghcr.io/devcontainers/features/common-utils:2": {
+            "installZsh": true,
+            "configureZshAsDefaultShell": true,
+            "installOhMyZsh": true,
+            "username": "vscode"
+        },
+        "ghcr.io/devcontainers/features/node:1": {
+            "version": "lts"
+        },
+        "ghcr.io/anthropics/devcontainer-features/claude-code:latest": {}
+    },
+    "runArgs": ["--env-file", "${localWorkspaceFolder}/.env", "--network=host"],
+    "mounts": [{
+        "type": "volume",
+        "source": "minecraft-terraform-claude-config",
+        "target": "/home/vscode/.claude"
+    }],
+    "customizations": {
+        "vscode": {
+            "extensions": ["hashicorp.terraform"],
+            "settings": { "terminal.integrated.defaultProfile.linux": "zsh" }
+        }
+    },
+    "postCreateCommand": "sudo chown -R vscode:vscode /home/vscode/.claude",
+    "remoteUser": "vscode"
+}
