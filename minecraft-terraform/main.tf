@@ -85,7 +85,6 @@ resource "aws_security_group" "minecraft" {
     to_port     = 22
     protocol    = "tcp"
     cidr_blocks = [var.ec2_ssh_cidr]
-
   }
 
   # Allow all outbound traffic
@@ -110,8 +109,8 @@ resource "aws_instance" "minecraft" {
   vpc_security_group_ids      = [aws_security_group.minecraft.id]
   associate_public_ip_address = true
   key_name                    = "minecraft-ec2-ssh-key"
+  user_data                   = file("mc_ec2_bootstrap.sh")
   tags = {
     Name = "MinecraftServer"
   }
-  # user_data = file("startup_neoforge.sh")
 }

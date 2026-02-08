@@ -40,3 +40,4 @@ terraform.rc
 draft/
 draft*
 *.pem
+server_files_backups/

@@ -40,7 +40,7 @@ variable "instance_type" {
   type        = string
   # Requires x86 architecture
   # Charges apply for this instance type
-  default     = "r6i.large"
+  default     = "t3a.large"
   description = "EC2 instance type"
 }
 
