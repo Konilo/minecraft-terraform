@@ -5,9 +5,22 @@ exec > /var/log/user_data.log 2>&1
 echo "=== Minecraft EC2 Bootstrap ==="
 echo "Started at: $(date)"
 
-# Install Java 21 (Amazon Corretto) and rsync
-echo "Installing Java 21 and rsync..."
-yum install -y java-21-amazon-corretto-headless rsync
+# Add Amazon Corretto's official yum repo.
+# AL2023 bundled repos carry Corretto 11/17/21 but not 25 yet (as of this AMI snapshot).
+# The Corretto repo has every variant including 25-headless.
+rpm --import https://yum.corretto.aws/corretto.key
+curl -fsSL -o /etc/yum.repos.d/corretto.repo https://yum.corretto.aws/corretto.repo
+
+# Install Java 21 (for modded NeoForge 1.21.x), Java 25 (for Paper 26.1+), rsync, jq.
+# Both JDKs coexist; each world's startserver.sh picks the right one (see systemd unit below).
+# Note: AL2023 native repo splits Corretto into -headless/-headful/-devel; the upstream yum.corretto.aws repo
+# only ships a combined -devel package, which is what we use for Java 25.
+echo "Installing Java 21, Java 25, rsync, jq..."
+yum install -y java-21-amazon-corretto-headless java-25-amazon-corretto-devel rsync jq
+
+# We deliberately do NOT touch `alternatives` -- the upstream Corretto -devel RPM doesn't register
+# itself there, and AL2023's java-21 -headless does. Each world's startserver.sh points to its
+# required JDK by absolute path (Paper: hardcoded; modded: HolyCubeRevolution_JAVA env var below).
 
 # Create server directory
 mkdir -p /opt/minecraft/server
@@ -38,6 +51,7 @@ After=network.target
 Type=simple
 WorkingDirectory=/opt/minecraft/server
 Environment=HolyCubeRevolution_RESTART=false
+Environment=HolyCubeRevolution_JAVA=/usr/lib/jvm/java-21-amazon-corretto.x86_64/bin/java
 ExecStart=/bin/bash /opt/minecraft/server/startserver.sh
 Restart=no
 
