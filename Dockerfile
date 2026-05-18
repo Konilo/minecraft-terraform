@@ -24,3 +24,12 @@ RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2
     unzip awscliv2.zip && \
     ./aws/install && \
     rm -rf awscliv2.zip aws
+
+RUN mkdir -p -m 755 /etc/apt/keyrings && \
+    wget -nv -O- https://cli.github.com/packages/githubcli-archive-keyring.gpg | \
+    tee /etc/apt/keyrings/githubcli-archive-keyring.gpg > /dev/null && \
+    chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg
+RUN echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] \
+    https://cli.github.com/packages stable main" | \
+    tee /etc/apt/sources.list.d/github-cli.list
+RUN apt-get update && apt-get install -y gh

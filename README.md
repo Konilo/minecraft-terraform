@@ -1,8 +1,12 @@
 # Minecraft Terraform
 
-This repo manages a modded Minecraft Java server on AWS EC2 using Terraform, with local save persistence via rsync and a VS Code devcontainer for development.
+This repo manages Minecraft Java servers on AWS EC2 using Terraform, with local save persistence via rsync and a VS Code devcontainer for development. It supports multiple worlds (modded and vanilla) that share the same Terraform stack; only one runs at a time, and each has its own local save directory.
 
-Pieces of this work were inspired by [Minecraft-World-in-AWS](https://github.com/chica-94/Minecraft-World-in-AWS) and [Holycube Revolution](https://www.curseforge.com/minecraft/modpacks/holycube-revolution).
+Two world templates ship out of the box:
+- **`holycube-revolution`** — modded NeoForge 1.21.1 server (the [Holycube Revolution](https://www.curseforge.com/minecraft/modpacks/holycube-revolution) modpack).
+- **`vanilla-paper`** — vanilla-compatible world backed by [PaperMC](https://papermc.io/) (currently Minecraft 26.1.2). Players join with plain vanilla Minecraft Java — no mods or modpack on the client side.
+
+Pieces of this work were inspired by [Minecraft-World-in-AWS](https://github.com/chica-94/Minecraft-World-in-AWS).
 
 ## Prerequisites
 
@@ -32,28 +36,49 @@ aws ec2 create-key-pair --key-name minecraft-ec2-ssh-key --query "KeyMaterial" -
 chmod 400 /app/minecraft-terraform/minecraft-ec2-ssh-key.pem
 ```
 
-5. Copy your server files to the local backup directory (one-time):
+5. Initialize the worlds you want from the templates under `initial_server_files/` (one-time per world):
 ```sh
-cp -r /app/initial_server_files/ /app/server_files_backups/konilo-holycube-revolution
+# Modded world (NeoForge / HolyCube Revolution)
+cp -r /app/initial_server_files/holycube-revolution /app/server_files_backups/konilo-holycube-revolution
+
+# Vanilla world (PaperMC backend, vanilla client compatible)
+cp -r /app/initial_server_files/vanilla-paper /app/server_files_backups/konilo-vanilla-paper
 ```
+Each directory under `server_files_backups/` is one world's live local save.
 
 ## Usage
 
-### Start the server
+The start/stop scripts take an optional `SERVER_NAME` argument matching a directory under `server_files_backups/`. If omitted, it defaults to `konilo-holycube-revolution`.
+
+Only one world runs at a time — `mc_start.sh` provisions the EC2 and `mc_stop.sh` destroys it.
+
+### Start a world
 
 ```sh
+# Modded world (default)
 bash /app/bin/mc_start.sh
+# or explicitly:
+bash /app/bin/mc_start.sh konilo-holycube-revolution
+
+# Vanilla world
+bash /app/bin/mc_start.sh konilo-vanilla-paper
 ```
 
-This auto-detects your IP, provisions AWS infrastructure (VPC, EC2, security groups), waits for the EC2 bootstrap to complete, uploads server files via rsync, and starts the Minecraft server. You can close VS Code/Docker after this -- the server runs independently on EC2.
+This auto-detects your IP, provisions AWS infrastructure (VPC, EC2, security groups), waits for the EC2 bootstrap to complete, uploads that world's files via rsync, and starts the Minecraft server. You can close VS Code/Docker after this -- the server runs independently on EC2.
 
-### Stop the server
+### Stop a world
 
 ```sh
+# Modded world (default)
 bash /app/bin/mc_stop.sh
+# or explicitly:
+bash /app/bin/mc_stop.sh konilo-holycube-revolution
+
+# Vanilla world
+bash /app/bin/mc_stop.sh konilo-vanilla-paper
 ```
 
-This SSHs to the EC2, stops the Minecraft server, downloads all server files back to your local machine via rsync, then destroys the infrastructure. Server data persists locally for next time.
+Pass the **same** `SERVER_NAME` you started with — the script rsyncs the EC2's `/opt/minecraft/server/` (including the live `world/` save) back into `server_files_backups/<SERVER_NAME>/` before destroying the infrastructure. Two worlds therefore never share local save state.
 
 ### Monitoring
 
@@ -65,12 +90,19 @@ ssh -i /app/minecraft-terraform/minecraft-ec2-ssh-key.pem ec2-user@<EC2_IP> 'tai
 
 ## How to connect on Minecraft
 
+### Modded world (`konilo-holycube-revolution`)
 - The server uses specific versions of Minecraft (1.21.1), NeoForge (21.1.148), and mods. Players must have the same setup (except for client-only mods like FreeCam).
 - Create and share a CurseForge modpack with the right versions. Players install CurseForge desktop, import the modpack, hit play, and use "Direct connection" with the EC2 IP.
+
+### Vanilla world (`konilo-vanilla-paper`)
+- Backend is [PaperMC](https://papermc.io/) for performance — players connect with **plain vanilla Minecraft Java 26.1.2** (no CurseForge, no mods).
+- On first start, `startserver.sh` fetches the latest stable Paper build for the configured version (see [`initial_server_files/vanilla-paper/startserver.sh`](initial_server_files/vanilla-paper/startserver.sh)) and caches `paper.jar` locally — subsequent starts reuse it.
+- To bump the Minecraft version, edit `PAPER_MC_VERSION` in that script, delete the cached `paper.jar` under `server_files_backups/konilo-vanilla-paper/`, and start the server again.
 
 ## Architecture
 
 - **Dockerfile**: Functional core (Debian + Terraform 1.11.4 + AWS CLI v2 + rsync + openssh-client)
 - **Devcontainer**: Dev experience (zsh + Oh My Zsh + Node.js + Claude Code + VS Code extensions)
-- **Local storage**: Server file persistence in `server_files_backups/<SERVER_NAME>/`
-- **EC2 mc_ec2_bootstrap**: Automatic server bootstrap (Java install, systemd service setup)
+- **World templates**: Per-world starter files under `initial_server_files/<world>/` — copy one to `server_files_backups/<SERVER_NAME>/` to bootstrap a new world.
+- **Local storage**: Live server file/save persistence in `server_files_backups/<SERVER_NAME>/`.
+- **EC2 mc_ec2_bootstrap**: World-agnostic server bootstrap (Java 21 + rsync + jq install, systemd service that runs whichever `startserver.sh` is rsynced in).

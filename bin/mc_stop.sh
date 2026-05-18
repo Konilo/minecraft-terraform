@@ -1,13 +1,25 @@
 #!/bin/bash
 set -euo pipefail
 
-SERVER_NAME="konilo-holycube-revolution"
+SERVER_NAME="${1:-konilo-holycube-revolution}"
 SERVER_FILES_DIR="/app/server_files_backups/$SERVER_NAME"
 TERRAFORM_DIR="/app/minecraft-terraform"
 SSH_KEY="$TERRAFORM_DIR/minecraft-ec2-ssh-key.pem"
 SSH_OPTS="-i $SSH_KEY -o StrictHostKeyChecking=no -o ConnectTimeout=5"
 
-echo "=== Minecraft Server Stop ==="
+echo "=== Minecraft Server Stop (world: $SERVER_NAME) ==="
+
+if [ ! -d "$SERVER_FILES_DIR" ]; then
+    echo "Error: Server files directory not found: $SERVER_FILES_DIR"
+    echo ""
+    echo "Usage: $0 [SERVER_NAME]"
+    echo "  SERVER_NAME must match the value passed to mc_start.sh (defaults to 'konilo-holycube-revolution')."
+    if [ -d /app/server_files_backups ] && [ -n "$(ls -A /app/server_files_backups 2>/dev/null)" ]; then
+        echo "Existing worlds under /app/server_files_backups/:"
+        ls -1 /app/server_files_backups
+    fi
+    exit 1
+fi
 
 # Get EC2 IP from terraform
 cd "$TERRAFORM_DIR"
